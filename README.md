@@ -1,10 +1,10 @@
-
+<!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>D-Kart — Buy & Sell Second-Hand</title>
-<meta name="description" content="Buy and sell pre-loved fashion, accessories and lifestyle items sustainably.">
+<meta name="description" content="Buy and sell pre-loved fashion, accessories and lifestyle items on D-Kart sustainably.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,600;0,700;1,600&family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <style>
@@ -304,7 +304,7 @@ footer a:hover{color:var(--accent)}
   <button class="hamburger" aria-label="Open filters" onclick="toggleFilterDrawer()">
     <span></span><span></span><span></span>
   </button>
-  <div class="logo" onclick="resetAll()" role="link" tabindex="0" aria-label="Thrift home">Thrift<em>.</em></div>
+  <div class="logo" onclick="resetAll()" role="link" tabindex="0" aria-label="D-Kart home">D-Kart<em>.</em></div>
   <div class="search-wrap" role="search">
     <input type="search" id="searchInput" placeholder="Search items, brands, categories…" aria-label="Search listings" oninput="applyFilters()" autocomplete="off">
     <span class="s-icon" aria-hidden="true">⌕</span>
@@ -364,7 +364,7 @@ footer a:hover{color:var(--accent)}
     </div>
     <div class="grid" id="grid" role="list" aria-label="Product listings"></div>
     <footer>
-      <span>© 2025 <strong>Thrift.</strong> — Circular fashion marketplace</span>
+      <span>© 2025 <strong>D-Kart.</strong> — Circular fashion marketplace</span>
       <div class="fl">
         <a href="#" onclick="return false">About</a>
         <a href="#" onclick="return false">Help</a>
@@ -535,7 +535,8 @@ function syncRangeFill(){
 function updateRange(){
   const mn=parseInt(document.getElementById('rangeMin')?.value||0);
   const mx=parseInt(document.getElementById('rangeMax')?.value||50000);
-  if(mn>mx){[minPrice,maxPrice]=[mx,mn]}else{minPrice=mn;maxPrice=mx}
+  if(mn>mx)return;
+  minPrice=mn;maxPrice=mx;
   syncRangeFill();
   applyFilters();
 }
@@ -603,22 +604,11 @@ function resetFilters(){
 function resetAll(){resetFilters();window.scrollTo({top:0,behavior:'smooth'})}
 
 function updateCatCounts(){
-  const filtered=getFiltered();
   ['All','Clothing','Footwear','Bags','Watches','Jewellery','Sunglasses','Books','Electronics'].forEach(c=>{
     const el=document.getElementById('cc-'+c);
-    if(el){
-      let count;
-      if(c==='All')count=filtered.length;
-      else{
-        const tempCat=activeCat;
-        activeCat=c;
-        count=getFiltered().length;
-        activeCat=tempCat;
-      }
-      el.textContent=count;
-    }
+    if(el)el.textContent=c==='All'?products.length:products.filter(p=>p.cat===c).length;
   });
-  document.getElementById('liveCount').textContent=filtered.length;
+  document.getElementById('liveCount').textContent=products.length;
 }
 
 function updateFab(){
@@ -741,25 +731,19 @@ function closeSell(){document.getElementById('sellOverlay').classList.remove('op
 
 function submitListing(){
   const title=document.getElementById('sTitle').value.trim();
-  const cat=document.getElementById('sCat').value;
-  const cond=document.getElementById('sCond').value;
   const price=parseInt(document.getElementById('sPrice').value);
-  
   if(!title){showToast('⚠️ Please enter a title');document.getElementById('sTitle').focus();return}
-  if(!cat){showToast('⚠️ Please select a category');document.getElementById('sCat').focus();return}
-  if(!cond){showToast('⚠️ Please select condition');document.getElementById('sCond').focus();return}
   if(!price||price<1){showToast('⚠️ Please enter a valid price');document.getElementById('sPrice').focus();return}
-  
   const orig=parseInt(document.getElementById('sOrig').value)||price*3;
   products.unshift({
-    id:Date.now(),name:title,cat:cat,price,orig,
-    cond:cond,
+    id:Date.now(),name:title,cat:document.getElementById('sCat').value,price,orig,
+    cond:document.getElementById('sCond').value,
     size:document.getElementById('sSize').value.trim()||'One Size',
     brand:document.getElementById('sBrand').value.trim()||'Other',
     seller:'You',loc:document.getElementById('sLoc').value.trim()||'India',
     desc:document.getElementById('sDesc').value.trim()||'No description provided.',
     likes:0,rating:5.0,
-    ts:Date.now()
+    ts:Date.now() // exact now → appears as "Just now" and gets NEW ribbon
   });
   closeSell();mountFilters();applyFilters();
   ['sTitle','sPrice','sOrig','sBrand','sSize','sLoc','sDesc'].forEach(id=>document.getElementById(id).value='');
